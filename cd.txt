@@ -1,0 +1,85 @@
+1) Character Count Framing Technique
+
+def character_count(data):
+    frames = []
+    words = data.split()
+    for word in words:
+        count = len(word) + 1
+        frame = str(count) + word
+        frames.append(frame)
+    return frames
+
+data = input("Enter data: ")
+result = character_count(data)
+print("Frames:", result)
+
+
+2) TCP Client Server Communication
+
+import socket
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind(('localhost',12345))
+server.listen(1)
+conn,addr = server.accept()
+data = conn.recv(1024).decode()
+print(data)
+conn.send("Hello from Server".encode())
+conn.close()
+
+
+3) UDP Client Server Communication
+
+import socket
+server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+server.bind(('localhost',12345))
+data,addr = server.recvfrom(1024)
+print(data.decode())
+server.sendto("Hello Client".encode(),addr)
+
+
+4) File Transfer using TCP
+
+import socket
+server = socket.socket()
+server.bind(('localhost',12345))
+server.listen(1)
+conn,addr = server.accept()
+file=open("sample.txt","rb")
+data=file.read(1024)
+while data:
+    conn.send(data)
+    data=file.read(1024)
+file.close()
+conn.close()
+
+5) Bit Stuffing
+
+data=input("Enter bit stream: ")
+count=0
+result=""
+for bit in data:
+    if bit=='1':
+        count+=1
+    else:
+        count=0
+    result+=bit
+    if count==5:
+        result+='0'
+        count=0
+print(result)
+
+
+6)Byte Stuffing
+
+flag='F'
+escape='E'
+data=input("Enter data: ")
+stuffed=""
+for char in data:
+    if char==flag or char==escape:
+        stuffed+=escape
+    stuffed+=char
+stuffed=flag+stuffed+flag
+print(stuffed)
+
+
