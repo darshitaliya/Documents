@@ -16,41 +16,90 @@ print("Frames:", result)
 
 2) TCP Client Server Communication
 
+*server
 import socket
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind(('localhost',12345))
-server.listen(1)
-conn,addr = server.accept()
-data = conn.recv(1024).decode()
-print(data)
-conn.send("Hello from Server".encode())
+s = socket.socket()
+s.bind(('localhost', 12345))
+s.listen(1)
+print("Server waiting...")
+conn, addr = s.accept()
+msg = conn.recv(1024).decode()
+print("Client:", msg)
+conn.send("Hello Client".encode())
 conn.close()
+s.close()
 
+*client
+import socket
+c = socket.socket()
+c.connect(('localhost', 12345))
+c.send("Hello Server".encode())
+msg = c.recv(1024).decode()
+print("Server:", msg)
+c.close()
 
 3) UDP Client Server Communication
 
+*server
 import socket
 server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-server.bind(('localhost',12345))
-data,addr = server.recvfrom(1024)
-print(data.decode())
-server.sendto("Hello Client".encode(),addr)
+server.bind(('localhost', 12345))
+print("UDP Server waiting...")
+data, addr = server.recvfrom(1024)
+print("Client:", data.decode())
+server.sendto("Hello Client".encode(), addr)
+
+*client
+import socket
+client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+client.sendto("Hello Server".encode(), ('localhost', 12345))
+data, addr = client.recvfrom(1024)
+print("Server:", data.decode())
 
 
 4) File Transfer using TCP
 
+*server
 import socket
+
 server = socket.socket()
-server.bind(('localhost',12345))
+server.bind(('localhost', 12345))
 server.listen(1)
-conn,addr = server.accept()
-file=open("sample.txt","rb")
-data=file.read(1024)
+
+print("Server waiting...")
+
+conn, addr = server.accept()
+
+file = open("sample2.txt", "rb")
+
+data = file.read(1024)
 while data:
     conn.send(data)
-    data=file.read(1024)
+    data = file.read(1024)
+
 file.close()
 conn.close()
+server.close()
+
+print("File sent successfully")
+
+*client
+import socket
+
+client = socket.socket()
+client.connect(('localhost', 12345))
+
+file = open("received.txt", "wb")
+
+data = client.recv(1024)
+while data:
+    file.write(data)
+    data = client.recv(1024)
+
+file.close()
+client.close()
+
+print("File received successfully")
 
 5) Bit Stuffing
 
