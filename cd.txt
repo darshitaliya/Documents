@@ -1,134 +1,643 @@
-1) Character Count Framing Technique
+1) DDA Algorihm
 
-def character_count(data):
-    frames = []
-    words = data.split()
-    for word in words:
-        count = len(word) + 1
-        frame = str(count) + word
-        frames.append(frame)
-    return frames
+#include <GL/freeglut.h>
+#include <math.h>
+#include <stdlib.h>
 
-data = input("Enter data: ")
-result = character_count(data)
-print("Frames:", result)
+void drawDDA(int x1, int y1, int x2, int y2)
+{
+    float dx = x2 - x1;
+    float dy = y2 - y1;
 
+    int steps = (abs(dx) > abs(dy)) ? abs(dx) : abs(dy);
 
-2) TCP Client Server Communication
+    float xInc = dx / steps;
+    float yInc = dy / steps;
 
-*server
-import socket
-s = socket.socket()
-s.bind(('localhost', 12345))
-s.listen(1)
-print("Server waiting...")
-conn, addr = s.accept()
-msg = conn.recv(1024).decode()
-print("Client:", msg)
-conn.send("Hello Client".encode())
-conn.close()
-s.close()
+    float x = x1;
+    float y = y1;
 
-*client
-import socket
-c = socket.socket()
-c.connect(('localhost', 12345))
-c.send("Hello Server".encode())
-msg = c.recv(1024).decode()
-print("Server:", msg)
-c.close()
+    glBegin(GL_POINTS);
+    for (int i = 0; i <= steps; i++)
+    {
+        glVertex2i((int)round(x), (int)round(y));
+        x += xInc;
+        y += yInc;
+    }
+    glEnd();
+    glFlush();
+}
 
-3) UDP Client Server Communication
+void display()
+{
+    glClear(GL_COLOR_BUFFER_BIT);
+    drawDDA(50, 100, 300, 250);
+}
 
-*server
-import socket
-server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-server.bind(('localhost', 12345))
-print("UDP Server waiting...")
-data, addr = server.recvfrom(1024)
-print("Client:", data.decode())
-server.sendto("Hello Client".encode(), addr)
+void init()
+{
+    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glColor3f(1.0, 1.0, 1.0, 1.0);   // white line
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(0, 500, 0, 500);
+}
 
-*client
-import socket
-client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-client.sendto("Hello Server".encode(), ('localhost', 12345))
-data, addr = client.recvfrom(1024)
-print("Server:", data.decode())
-
-
-4) File Transfer using TCP
-
-*server
-import socket
-
-server = socket.socket()
-server.bind(('localhost', 12345))
-server.listen(1)
-
-print("Server waiting...")
-
-conn, addr = server.accept()
-
-file = open("sample2.txt", "rb")
-
-data = file.read(1024)
-while data:
-    conn.send(data)
-    data = file.read(1024)
-
-file.close()
-conn.close()
-server.close()
-
-print("File sent successfully")
-
-*client
-import socket
-
-client = socket.socket()
-client.connect(('localhost', 12345))
-
-file = open("received.txt", "wb")
-
-data = client.recv(1024)
-while data:
-    file.write(data)
-    data = client.recv(1024)
-
-file.close()
-client.close()
-
-print("File received successfully")
-
-5) Bit Stuffing
-
-data=input("Enter bit stream: ")
-count=0
-result=""
-for bit in data:
-    if bit=='1':
-        count+=1
-    else:
-        count=0
-    result+=bit
-    if count==5:
-        result+='0'
-        count=0
-print(result)
+int main(int argc, char** argv)
+{
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+    glutInitWindowSize(500, 500);
+    glutCreateWindow("DDA Line Drawing Algorithm");
+    init();
+    glutDisplayFunc(display);
+    glutMainLoop();
+    return 0;
+}
 
 
-6)Byte Stuffing
 
-flag='F'
-escape='E'
-data=input("Enter data: ")
-stuffed=""
-for char in data:
-    if char==flag or char==escape:
-        stuffed+=escape
-    stuffed+=char
-stuffed=flag+stuffed+flag
-print(stuffed)
+2) Bresenham's Algorithm
 
+#include <GL/glut.h>
+#include <math.h>
+
+void drawDDA(int x1, int y1, int x2, int y2)
+{
+    float dx = x2 - x1;
+    float dy = y2 - y1;
+
+    int steps = (abs(dx) > abs(dy)) ? abs(dx) : abs(dy);
+
+    float xInc = dx / steps;
+    float yInc = dy / steps;
+
+    float x = x1;
+    float y = y1;
+
+    glBegin(GL_POINTS);
+    for (int i = 0; i <= steps; i++)
+    {
+        glVertex2i(round(x), round(y));
+        x += xInc;
+        y += yInc;
+    }
+    glEnd();
+    glFlush();
+}
+
+void display()
+{
+    glClear(GL_COLOR_BUFFER_BIT);
+    drawDDA(50, 100, 300, 250);
+}
+ss
+void init()
+{
+    glClearColor(0, 0, 0, 1);
+    glMatrixMode(GL_PROJECTION);
+    gluOrtho2D(0, 500, 0, 500);
+}
+
+int main(int argc, char** argv)
+{
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+    glutInitWindowSize(500, 500);
+    glutCreateWindow("DDA Line Drawing Algorithm");
+    init();
+    glutDisplayFunc(display);
+    glutMainLoop();
+    return 0;
+}
+
+3) MidPoint circle
+
+#include <GL/glut.h>
+
+void plotPoints(int xc, int yc, int x, int y)
+{
+    glVertex2i(xc + x, yc + y);
+    glVertex2i(xc - x, yc + y);
+    glVertex2i(xc + x, yc - y);
+    glVertex2i(xc - x, yc - y);
+
+    glVertex2i(xc + y, yc + x);
+    glVertex2i(xc - y, yc + x);
+    glVertex2i(xc + y, yc - x);
+    glVertex2i(xc - y, yc - x);
+}
+
+void drawCircle(int xc, int yc, int r)
+{
+    int x = 0;
+    int y = r;
+    int p = 1 - r;
+
+    glBegin(GL_POINTS);
+
+    while (x <= y)
+    {
+        plotPoints(xc, yc, x, y);
+
+        if (p < 0)
+        {
+            p = p + 2 * x + 1;
+        }
+        else
+        {
+            y--;
+            p = p + 2 * x + 1 - 2 * y;
+        }
+        x++;
+    }
+
+    glEnd();
+    glFlush();
+}
+
+void display()
+{
+    glClear(GL_COLOR_BUFFER_BIT);
+    drawCircle(250, 250, 100);
+}
+
+void init()
+{
+    glClearColor(0, 0, 0, 1);
+    glMatrixMode(GL_PROJECTION);
+    gluOrtho2D(0, 500, 0, 500);
+}
+
+int main(int argc, char** argv)
+{
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+    glutInitWindowSize(500, 500);
+    glutCreateWindow("Midpoint / Bresenham Circle Algorithm");
+    init();
+    glutDisplayFunc(display);
+    glutMainLoop();
+    return 0;
+}
+
+
+4) Bresenham's Circle Algorithm
+
+#include <graphics.h>
+
+void drawCircle(int xc, int yc, int x, int y) {
+    putpixel(xc + x, yc + y, WHITE);
+    putpixel(xc - x, yc + y, WHITE);
+    putpixel(xc + x, yc - y, WHITE);
+    putpixel(xc - x, yc - y, WHITE);
+    putpixel(xc + y, yc + x, WHITE);
+    putpixel(xc - y, yc + x, WHITE);
+    putpixel(xc + y, yc - x, WHITE);
+    putpixel(xc - y, yc - x, WHITE);
+}
+
+void bresenhamCircle(int xc, int yc, int r) {
+    int x = 0, y = r;
+    int d = 3 - 2 * r;
+    drawCircle(xc, yc, x, y);
+    while (y >= x) {
+        x++;
+        if (d > 0) {
+            y--;
+            d = d + 4 * (x - y) + 10;
+        } else {
+            d = d + 4 * x + 6;
+        }
+        drawCircle(xc, yc, x, y);
+    }
+}
+
+int main() {
+    int gd = DETECT, gm;
+    initgraph(&gd, &gm, "");
+    bresenhamCircle(200, 200, 100);
+    getch();
+    closegraph();
+    return 0;
+}
+
+5) Midpoint Ellipse Algorithm.
+
+#include <GL/glut.h>
+#include <stdio.h>
+#include <math.h>
+int rx, ry, xc=0, yc=0;
+/* Function to plot 4 symmetric points */
+void plotPoints(int x, int y)
+{
+ glBegin(GL_POINTS);
+ glVertex2i(xc + x, yc + y);
+ glVertex2i(xc - x, yc + y);
+ glVertex2i(xc + x, yc - y);
+ glVertex2i(xc - x, yc - y);
+ glEnd();
+}
+/* Midpoint Ellipse Algorithm */
+void midpointEllipse()
+{
+ float dx, dy, d1, d2, x, y;
+ x = 0;
+ y = ry;
+ // Initial decision parameter for Region 1
+ d1 = (ry * ry) - (rx * rx * ry) + (0.25 * rx * rx);
+ dx = 2 * ry * ry * x;
+ dy = 2 * rx * rx * y;
+ // -------- Region 1 --------
+ while (dx < dy)
+ {
+ plotPoints(x, y);
+ if (d1 < 0)
+ {
+ x++;
+ dx = dx + (2 * ry * ry);
+ d1 = d1 + dx + (ry * ry);
+ }
+ else
+ {
+ x++;
+ y--;
+ dx = dx + (2 * ry * ry);
+ dy = dy - (2 * rx * rx);
+ d1 = d1 + dx - dy + (ry * ry);
+ }
+ }
+ // Initial decision parameter for Region 2
+ d2 = ((ry * ry) * ((x + 0.5) * (x + 0.5))) +
+ ((rx * rx) * ((y - 1) * (y - 1))) -
+ (rx * rx * ry * ry);
+ // -------- Region 2 --------
+ while (y >= 0)
+ {
+ plotPoints(x, y);
+ if (d2 > 0)
+ {
+ y--;
+ dy = dy - (2 * rx * rx);
+ d2 = d2 + (rx * rx) - dy;
+ }
+ else
+ {
+ y--;
+ x++;
+ dx = dx + (2 * ry * ry);
+ dy = dy - (2 * rx * rx);
+ d2 = d2 + dx - dy + (rx * rx);
+ }
+ }
+}
+/* Display function */
+void display()
+{
+ glClear(GL_COLOR_BUFFER_BIT);
+ glColor3f(1.0, 1.0, 1.0);
+ midpointEllipse();
+ glFlush();
+}
+/* Initialization */
+void init()
+{
+ glClearColor(0.0, 0.0, 0.0, 1.0);
+ gluOrtho2D(-500, 500, -500, 500);
+}
+/* Main function */
+int main(int argc, char** argv)
+{
+ printf("Enter rx: ");
+ scanf("%d", &rx);
+ printf("Enter ry: ");
+ scanf("%d", &ry);
+ system("cls");
+ glutInit(&argc, argv);
+ glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+ glutInitWindowSize(800, 800);
+ glutInitWindowPosition(100, 100);
+ glutCreateWindow("Midpoint Ellipse Algorithm - OpenGL");
+ init();
+ glutDisplayFunc(display);
+ glutMainLoop();
+ return 0;
+}
+
+
+6) Scan-line and Boundary Fill algorithms
+
+//Scanline
+
+#include <GL/glut.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+int x[10], y[10];   // polygon vertices
+int n = 4;          // number of vertices
+
+// Function to draw a pixel
+void drawPixel(int px, int py)
+{
+    glBegin(GL_POINTS);
+    glVertex2i(px, py);
+    glEnd();
+}
+
+// Scan-line filling function
+void scanline()
+{
+    int i, j, k;
+    int ymin = 500, ymax = 0;
+    int interx[10];
+
+    // Find ymin and ymax
+    for(i = 0; i < n; i++)
+    {
+        if(y[i] < ymin)
+            ymin = y[i];
+        if(y[i] > ymax)
+            ymax = y[i];
+    }
+
+    // Move scanline from ymin to ymax
+    for(int scan = ymin; scan <= ymax; scan++)
+    {
+        k = 0;   // reset intersection counter
+
+        // Check each edge
+        for(i = 0; i < n; i++)
+        {
+            int next = (i + 1) % n;
+
+            // Ignore horizontal edges
+            if(y[i] == y[next])
+                continue;
+
+            // Check if scanline intersects edge
+            if(scan >= (y[i] < y[next] ? y[i] : y[next]) &&
+               scan <  (y[i] > y[next] ? y[i] : y[next]))
+            {
+                interx[k] = x[i] + (scan - y[i]) *
+                           (x[next] - x[i]) /
+                           (y[next] - y[i]);
+                k++;
+            }
+        }
+
+        // Sort intersection points (simple bubble sort)
+        for(i = 0; i < k-1; i++)
+        {
+            for(j = i+1; j < k; j++)
+            {
+                if(interx[i] > interx[j])
+                {
+                    int temp = interx[i];
+                    interx[i] = interx[j];
+                    interx[j] = temp;
+                }
+            }
+        }
+
+        // Fill between pairs
+        for(i = 0; i < k; i += 2)
+        {
+            for(j = interx[i]; j <= interx[i+1]; j++)
+            {
+                drawPixel(j, scan);
+            }
+        }
+    }
+}
+
+// Display function
+void display()
+{
+    glClear(GL_COLOR_BUFFER_BIT);
+    glColor3f(1, 0, 0);   // red fill color
+    scanline();
+    glFlush();
+}
+
+// Initialization
+void init()
+{
+    glClearColor(1,1,1,1);
+    gluOrtho2D(0, 500, 0, 500);
+}
+
+// Main function
+int main(int argc, char** argv)
+{
+    // Define polygon vertices
+
+    x[0] = 100; y[0] = 100;
+    x[1] = 200; y[1] = 300;
+    x[2] = 350; y[2] = 250;
+    x[3] = 300; y[3] = 100;
+
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+    glutInitWindowSize(500, 500);
+    glutCreateWindow("Scan Line Polygon Fill - C");
+
+    init();
+    glutDisplayFunc(display);
+    glutMainLoop();
+
+    return 0;
+}
+
+7) Flood Fill Algorithm
+
+#include <GL/glut.h>
+#include <stdio.h>
+
+// Boundary color (Black)
+float boundaryColor[3] = {0.0, 0.0, 0.0};
+
+// Fill color (Red)
+float fillColor[3] = {1.0, 0.0, 0.0};
+
+// Function to set pixel
+void setPixel(int x, int y)
+{
+    glColor3fv(fillColor);
+    glBegin(GL_POINTS);
+    glVertex2i(x, y);
+    glEnd();
+    glFlush();
+}
+
+// Function to get pixel color
+void getPixel(int x, int y, float color[3])
+{
+    glReadPixels(x, y, 1, 1, GL_RGB, GL_FLOAT, color);
+}
+
+// Boundary Fill Function (4-connected)
+void boundaryFill(int x, int y)
+{
+    float currentColor[3];
+
+    getPixel(x, y, currentColor);
+
+    // If current pixel is not boundary and not already filled
+    if ((currentColor[0] != boundaryColor[0] ||
+         currentColor[1] != boundaryColor[1] ||
+         currentColor[2] != boundaryColor[2]) &&
+
+        (currentColor[0] != fillColor[0] ||
+         currentColor[1] != fillColor[1] ||
+         currentColor[2] != fillColor[2]))
+    {
+        setPixel(x, y);
+
+        // Recursive calls (4 directions)
+        boundaryFill(x+1, y);
+        boundaryFill(x-1, y);
+        boundaryFill(x, y+1);
+        boundaryFill(x, y-1);
+    }
+}
+
+// Draw polygon boundary
+void drawPolygon()
+{
+    glColor3fv(boundaryColor);
+
+    glBegin(GL_LINE_LOOP);
+        glVertex2i(150,150);
+        glVertex2i(350,150);
+        glVertex2i(350,350);
+        glVertex2i(150,350);
+    glEnd();
+
+    glFlush();
+}
+
+// Mouse function to start filling
+void mouse(int button, int state, int x, int y)
+{
+    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+    {
+        boundaryFill(x, 500 - y);  // Adjust y coordinate
+    }
+}
+
+// Display function
+void display()
+{
+    glClear(GL_COLOR_BUFFER_BIT);
+    drawPolygon();
+}
+
+// Initialization
+void init()
+{
+    glClearColor(1,1,1,1);  // White background
+    gluOrtho2D(0,500,0,500);
+}
+
+// Main function
+int main(int argc, char** argv)
+{
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+    glutInitWindowSize(500,500);
+    glutCreateWindow("Boundary Fill Algorithm - C");
+
+    init();
+    glutDisplayFunc(display);
+    glutMouseFunc(mouse);
+    glutMainLoop();
+
+    return 0;
+}
+
+8) Perform translation, scaling, rotation, reflection, and shearing on 2D objects.
+
+#include <GL/glut.h>
+#include <math.h>
+#include <stdio.h>
+
+float theta = 90;   // Rotation angle
+
+// Rectangle coordinates
+int x_start = 100, y_start = 100;
+int x_end = 200, y_end = 200;
+
+
+// Rotate point
+void rotatePoint(float x, float y, float *xr, float *yr)
+{
+    float rad = theta * 3.1416 / 180;
+
+    *xr = x * cos(rad) - y * sin(rad);
+    *yr = x * sin(rad) + y * cos(rad);
+}
+
+
+// Draw rectangle
+void drawRectangle(float x1, float y1, float x2, float y2)
+{
+    glBegin(GL_LINE_LOOP);
+        glVertex2f(x1, y1);
+        glVertex2f(x2, y1);
+        glVertex2f(x2, y2);
+        glVertex2f(x1, y2);
+    glEnd();
+}
+
+
+void display()
+{
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Original Rectangle
+    glColor3f(0,0,0);
+    drawRectangle(x_start, y_start, x_end, y_end);
+
+    float rx1, ry1, rx2, ry2, rx3, ry3, rx4, ry4;
+
+    rotatePoint(x_start, y_start, &rx1, &ry1);
+    rotatePoint(x_end, y_start, &rx2, &ry2);
+    rotatePoint(x_end, y_end, &rx3, &ry3);
+    rotatePoint(x_start, y_end, &rx4, &ry4);
+
+    // Rotated Rectangle
+    glColor3f(1,0,0);
+
+    glBegin(GL_LINE_LOOP);
+        glVertex2f(rx1, ry1);
+        glVertex2f(rx2, ry2);
+        glVertex2f(rx3, ry3);
+        glVertex2f(rx4, ry4);
+    glEnd();
+
+    glFlush();
+}
+
+
+void init()
+{
+    glClearColor(1,1,1,1);
+    gluOrtho2D(-500,500,-500,500);
+}
+
+
+int main(int argc, char** argv)
+{
+    glutInit(&argc,argv);
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+    glutInitWindowSize(500,500);
+    glutCreateWindow("2D Rotation 90 Degree");
+
+    init();
+    glutDisplayFunc(display);
+
+    glutMainLoop();
+
+    return 0;
+}
 
