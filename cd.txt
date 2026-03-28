@@ -1,677 +1,331 @@
-https://limewire.com/d/Fl3ft#vYViw2FYTP
-
-freeglut
-opengl32
-glu32
-
-1) DDA Algorihm
-
-#include <GL/freeglut.h>
-#include <math.h>
-#include <stdlib.h>
-
-void drawDDA(int x1, int y1, int x2, int y2)
-{
-    float dx = x2 - x1;
-    float dy = y2 - y1;
-
-    int steps = (abs(dx) > abs(dy)) ? abs(dx) : abs(dy);
-
-    float xInc = dx / steps;
-    float yInc = dy / steps;
-
-    float x = x1;
-    float y = y1;
-
-    glBegin(GL_POINTS);
-    for (int i = 0; i <= steps; i++)
-    {
-        glVertex2i((int)round(x), (int)round(y));
-        x += xInc;
-        y += yInc;
-    }
-    glEnd();
-    glFlush();
-}
-
-void display()
-{
-    glClear(GL_COLOR_BUFFER_BIT);
-    drawDDA(50, 100, 300, 250);
-}
-
-void init()
-{
-    glClearColor(0.0, 0.0, 0.0, 1.0);
-    glColor3f(1.0, 1.0, 1.0, 1.0);   // white line
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluOrtho2D(0, 500, 0, 500);
-}
-
-int main(int argc, char** argv)
-{
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
-    glutInitWindowSize(500, 500);
-    glutCreateWindow("DDA Line Drawing Algorithm");
-    init();
-    glutDisplayFunc(display);
-    glutMainLoop();
-    return 0;
-}
-
-
-
-2) Bresenham's Algorithm
-
-#include <GL/glut.h>
-#include <stdlib.h>
-
-/* Bresenham Line Drawing Algorithm */
-void drawLine(int x0, int y0, int x1, int y1)
-{
-    int dx = x1 - x0;
-    int dy = y1 - y0;
-
-    int p = 2 * dy - dx;   // P0 = 2Δy - Δx
-    int x = x0;
-    int y = y0;
-
-    glBegin(GL_POINTS);
-
-    // Plot first point
-    glVertex2i(x, y);
-
-    // Repeat Δx times
-    for (int k = 0; k < dx; k++)
-    {
-        if (p < 0)
-        {
-            // Choose East pixel
-            x = x + 1;
-            p = p + 2 * dy;
-        }
-        else
-        {
-            // Choose North-East pixel
-            x = x + 1;
-            y = y + 1;
-            p = p + 2 * dy - 2 * dx;
-        }
-
-        glVertex2i(x, y);  // Plot next point
-    }
-
-    glEnd();
-}
-
-/* Display callback */
-void display()
-{
-    glClear(GL_COLOR_BUFFER_BIT);
-    glColor3f(1.0, 0.0, 0.0); // Red line
-
-    // Example: line from (50, 100) to (300, 250)
-    drawLine(50, 100, 300, 250);
-
-    glFlush();
-}
-
-/* Initialize OpenGL */
-void init()
-{
-    glClearColor(1.0, 1.0, 1.0, 1.0); // White background
-    glColor3f(1.0, 0.0, 0.0);
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluOrtho2D(0, 500, 0, 500); // 2D coordinate system
-}
-
-/* Main function */
-int main(int argc, char **argv)
-{
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
-    glutInitWindowSize(500, 500);
-    glutInitWindowPosition(100, 100);
-    glutCreateWindow("Bresenham Line Drawing Algorithm");
-
-    init();
-    glutDisplayFunc(display);
-    glutMainLoop();
-
-    return 0;
-}
-
-3) MidPoint circle
-
-#include <GL/glut.h>
-
-void plotPoints(int xc, int yc, int x, int y)
-{
-    glVertex2i(xc + x, yc + y);
-    glVertex2i(xc - x, yc + y);
-    glVertex2i(xc + x, yc - y);
-    glVertex2i(xc - x, yc - y);
-
-    glVertex2i(xc + y, yc + x);
-    glVertex2i(xc - y, yc + x);
-    glVertex2i(xc + y, yc - x);
-    glVertex2i(xc - y, yc - x);
-}
-
-void drawCircle(int xc, int yc, int r)
-{
-    int x = 0;
-    int y = r;
-    int p = 1 - r;
-
-    glBegin(GL_POINTS);
-
-    while (x <= y)
-    {
-        plotPoints(xc, yc, x, y);
-
-        if (p < 0)
-        {
-            p = p + 2 * x + 1;
-        }
-        else
-        {
-            y--;
-            p = p + 2 * x + 1 - 2 * y;
-        }
-        x++;
-    }
-
-    glEnd();
-    glFlush();
-}
-
-void display()
-{
-    glClear(GL_COLOR_BUFFER_BIT);
-    drawCircle(250, 250, 100);
-}
-
-void init()
-{
-    glClearColor(0, 0, 0, 1);
-    glMatrixMode(GL_PROJECTION);
-    gluOrtho2D(0, 500, 0, 500);
-}
-
-int main(int argc, char** argv)
-{
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
-    glutInitWindowSize(500, 500);
-    glutCreateWindow("Midpoint / Bresenham Circle Algorithm");
-    init();
-    glutDisplayFunc(display);
-    glutMainLoop();
-    return 0;
-}
-
-
-4) Bresenham's Circle Algorithm
-
-#include <graphics.h>
-
-void drawCircle(int xc, int yc, int x, int y) {
-    putpixel(xc + x, yc + y, WHITE);
-    putpixel(xc - x, yc + y, WHITE);
-    putpixel(xc + x, yc - y, WHITE);
-    putpixel(xc - x, yc - y, WHITE);
-    putpixel(xc + y, yc + x, WHITE);
-    putpixel(xc - y, yc + x, WHITE);
-    putpixel(xc + y, yc - x, WHITE);
-    putpixel(xc - y, yc - x, WHITE);
-}
-
-void bresenhamCircle(int xc, int yc, int r) {
-    int x = 0, y = r;
-    int d = 3 - 2 * r;
-    drawCircle(xc, yc, x, y);
-    while (y >= x) {
-        x++;
-        if (d > 0) {
-            y--;
-            d = d + 4 * (x - y) + 10;
-        } else {
-            d = d + 4 * x + 6;
-        }
-        drawCircle(xc, yc, x, y);
-    }
-}
-
-int main() {
-    int gd = DETECT, gm;
-    initgraph(&gd, &gm, "");
-    bresenhamCircle(200, 200, 100);
-    getch();
-    closegraph();
-    return 0;
-}
-
-5) Midpoint Ellipse Algorithm.
-
-#include <GL/glut.h>
-#include <stdio.h>
-#include <math.h>
-int rx, ry, xc=0, yc=0;
-/* Function to plot 4 symmetric points */
-void plotPoints(int x, int y)
-{
- glBegin(GL_POINTS);
- glVertex2i(xc + x, yc + y);
- glVertex2i(xc - x, yc + y);
- glVertex2i(xc + x, yc - y);
- glVertex2i(xc - x, yc - y);
- glEnd();
-}
-/* Midpoint Ellipse Algorithm */
-void midpointEllipse()
-{
- float dx, dy, d1, d2, x, y;
- x = 0;
- y = ry;
- // Initial decision parameter for Region 1
- d1 = (ry * ry) - (rx * rx * ry) + (0.25 * rx * rx);
- dx = 2 * ry * ry * x;
- dy = 2 * rx * rx * y;
- // -------- Region 1 --------
- while (dx < dy)
- {
- plotPoints(x, y);
- if (d1 < 0)
- {
- x++;
- dx = dx + (2 * ry * ry);
- d1 = d1 + dx + (ry * ry);
- }
- else
- {
- x++;
- y--;
- dx = dx + (2 * ry * ry);
- dy = dy - (2 * rx * rx);
- d1 = d1 + dx - dy + (ry * ry);
- }
- }
- // Initial decision parameter for Region 2
- d2 = ((ry * ry) * ((x + 0.5) * (x + 0.5))) +
- ((rx * rx) * ((y - 1) * (y - 1))) -
- (rx * rx * ry * ry);
- // -------- Region 2 --------
- while (y >= 0)
- {
- plotPoints(x, y);
- if (d2 > 0)
- {
- y--;
- dy = dy - (2 * rx * rx);
- d2 = d2 + (rx * rx) - dy;
- }
- else
- {
- y--;
- x++;
- dx = dx + (2 * ry * ry);
- dy = dy - (2 * rx * rx);
- d2 = d2 + dx - dy + (rx * rx);
- }
- }
-}
-/* Display function */
-void display()
-{
- glClear(GL_COLOR_BUFFER_BIT);
- glColor3f(1.0, 1.0, 1.0);
- midpointEllipse();
- glFlush();
-}
-/* Initialization */
-void init()
-{
- glClearColor(0.0, 0.0, 0.0, 1.0);
- gluOrtho2D(-500, 500, -500, 500);
-}
-/* Main function */
-int main(int argc, char** argv)
-{
- printf("Enter rx: ");
- scanf("%d", &rx);
- printf("Enter ry: ");
- scanf("%d", &ry);
- system("cls");
- glutInit(&argc, argv);
- glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
- glutInitWindowSize(800, 800);
- glutInitWindowPosition(100, 100);
- glutCreateWindow("Midpoint Ellipse Algorithm - OpenGL");
- init();
- glutDisplayFunc(display);
- glutMainLoop();
- return 0;
-}
-
-
-6) Scan-line and Boundary Fill algorithms
-
-//Scanline
-
-#include <GL/glut.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-int x[10], y[10];   // polygon vertices
-int n = 4;          // number of vertices
-
-// Function to draw a pixel
-void drawPixel(int px, int py)
-{
-    glBegin(GL_POINTS);
-    glVertex2i(px, py);
-    glEnd();
-}
-
-// Scan-line filling function
-void scanline()
-{
-    int i, j, k;
-    int ymin = 500, ymax = 0;
-    int interx[10];
-
-    // Find ymin and ymax
-    for(i = 0; i < n; i++)
-    {
-        if(y[i] < ymin)
-            ymin = y[i];
-        if(y[i] > ymax)
-            ymax = y[i];
-    }
-
-    // Move scanline from ymin to ymax
-    for(int scan = ymin; scan <= ymax; scan++)
-    {
-        k = 0;   // reset intersection counter
-
-        // Check each edge
-        for(i = 0; i < n; i++)
-        {
-            int next = (i + 1) % n;
-
-            // Ignore horizontal edges
-            if(y[i] == y[next])
-                continue;
-
-            // Check if scanline intersects edge
-            if(scan >= (y[i] < y[next] ? y[i] : y[next]) &&
-               scan <  (y[i] > y[next] ? y[i] : y[next]))
-            {
-                interx[k] = x[i] + (scan - y[i]) *
-                           (x[next] - x[i]) /
-                           (y[next] - y[i]);
-                k++;
-            }
-        }
-
-        // Sort intersection points (simple bubble sort)
-        for(i = 0; i < k-1; i++)
-        {
-            for(j = i+1; j < k; j++)
-            {
-                if(interx[i] > interx[j])
-                {
-                    int temp = interx[i];
-                    interx[i] = interx[j];
-                    interx[j] = temp;
-                }
-            }
-        }
-
-        // Fill between pairs
-        for(i = 0; i < k; i += 2)
-        {
-            for(j = interx[i]; j <= interx[i+1]; j++)
-            {
-                drawPixel(j, scan);
-            }
-        }
-    }
-}
-
-// Display function
-void display()
-{
-    glClear(GL_COLOR_BUFFER_BIT);
-    glColor3f(1, 0, 0);   // red fill color
-    scanline();
-    glFlush();
-}
-
-// Initialization
-void init()
-{
-    glClearColor(1,1,1,1);
-    gluOrtho2D(0, 500, 0, 500);
-}
-
-// Main function
-int main(int argc, char** argv)
-{
-    // Define polygon vertices
-
-    x[0] = 100; y[0] = 100;
-    x[1] = 200; y[1] = 300;
-    x[2] = 350; y[2] = 250;
-    x[3] = 300; y[3] = 100;
-
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
-    glutInitWindowSize(500, 500);
-    glutCreateWindow("Scan Line Polygon Fill - C");
-
-    init();
-    glutDisplayFunc(display);
-    glutMainLoop();
-
-    return 0;
-}
-
-7) Flood Fill Algorithm
-
-#include <GL/glut.h>
-#include <stdio.h>
-
-// Boundary color (Black)
-float boundaryColor[3] = {0.0, 0.0, 0.0};
-
-// Fill color (Red)
-float fillColor[3] = {1.0, 0.0, 0.0};
-
-// Function to set pixel
-void setPixel(int x, int y)
-{
-    glColor3fv(fillColor);
-    glBegin(GL_POINTS);
-    glVertex2i(x, y);
-    glEnd();
-    glFlush();
-}
-
-// Function to get pixel color
-void getPixel(int x, int y, float color[3])
-{
-    glReadPixels(x, y, 1, 1, GL_RGB, GL_FLOAT, color);
-}
-
-// Boundary Fill Function (4-connected)
-void boundaryFill(int x, int y)
-{
-    float currentColor[3];
-
-    getPixel(x, y, currentColor);
-
-    // If current pixel is not boundary and not already filled
-    if ((currentColor[0] != boundaryColor[0] ||
-         currentColor[1] != boundaryColor[1] ||
-         currentColor[2] != boundaryColor[2]) &&
-
-        (currentColor[0] != fillColor[0] ||
-         currentColor[1] != fillColor[1] ||
-         currentColor[2] != fillColor[2]))
-    {
-        setPixel(x, y);
-
-        // Recursive calls (4 directions)
-        boundaryFill(x+1, y);
-        boundaryFill(x-1, y);
-        boundaryFill(x, y+1);
-        boundaryFill(x, y-1);
-    }
-}
-
-// Draw polygon boundary
-void drawPolygon()
-{
-    glColor3fv(boundaryColor);
-
-    glBegin(GL_LINE_LOOP);
-        glVertex2i(150,150);
-        glVertex2i(350,150);
-        glVertex2i(350,350);
-        glVertex2i(150,350);
-    glEnd();
-
-    glFlush();
-}
-
-// Mouse function to start filling
-void mouse(int button, int state, int x, int y)
-{
-    if(button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
-    {
-        boundaryFill(x, 500 - y);  // Adjust y coordinate
-    }
-}
-
-// Display function
-void display()
-{
-    glClear(GL_COLOR_BUFFER_BIT);
-    drawPolygon();
-}
-
-// Initialization
-void init()
-{
-    glClearColor(1,1,1,1);  // White background
-    gluOrtho2D(0,500,0,500);
-}
-
-// Main function
-int main(int argc, char** argv)
-{
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
-    glutInitWindowSize(500,500);
-    glutCreateWindow("Boundary Fill Algorithm - C");
-
-    init();
-    glutDisplayFunc(display);
-    glutMouseFunc(mouse);
-    glutMainLoop();
-
-    return 0;
-}
-
-8) Perform translation, scaling, rotation, reflection, and shearing on 2D objects.
-
-#include <GL/glut.h>
-#include <math.h>
-#include <stdio.h>
-
-float theta = 90;   // Rotation angle
-
-// Rectangle coordinates
-int x_start = 100, y_start = 100;
-int x_end = 200, y_end = 200;
-
-
-// Rotate point
-void rotatePoint(float x, float y, float *xr, float *yr)
-{
-    float rad = theta * 3.1416 / 180;
-
-    *xr = x * cos(rad) - y * sin(rad);
-    *yr = x * sin(rad) + y * cos(rad);
-}
-
-
-// Draw rectangle
-void drawRectangle(float x1, float y1, float x2, float y2)
-{
-    glBegin(GL_LINE_LOOP);
-        glVertex2f(x1, y1);
-        glVertex2f(x2, y1);
-        glVertex2f(x2, y2);
-        glVertex2f(x1, y2);
-    glEnd();
-}
-
-
-void display()
-{
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    // Original Rectangle
-    glColor3f(0,0,0);
-    drawRectangle(x_start, y_start, x_end, y_end);
-
-    float rx1, ry1, rx2, ry2, rx3, ry3, rx4, ry4;
-
-    rotatePoint(x_start, y_start, &rx1, &ry1);
-    rotatePoint(x_end, y_start, &rx2, &ry2);
-    rotatePoint(x_end, y_end, &rx3, &ry3);
-    rotatePoint(x_start, y_end, &rx4, &ry4);
-
-    // Rotated Rectangle
-    glColor3f(1,0,0);
-
-    glBegin(GL_LINE_LOOP);
-        glVertex2f(rx1, ry1);
-        glVertex2f(rx2, ry2);
-        glVertex2f(rx3, ry3);
-        glVertex2f(rx4, ry4);
-    glEnd();
-
-    glFlush();
-}
-
-
-void init()
-{
-    glClearColor(1,1,1,1);
-    gluOrtho2D(-500,500,-500,500);
-}
-
-
-int main(int argc, char** argv)
-{
-    glutInit(&argc,argv);
-    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
-    glutInitWindowSize(500,500);
-    glutCreateWindow("2D Rotation 90 Degree");
-
-    init();
-    glutDisplayFunc(display);
-
-    glutMainLoop();
-
-    return 0;
-}
-
+1) tic tac toe
+
+theBoard = {'7': ' ' , '8': ' ' , '9': ' ' ,
+            '4': ' ' , '5': ' ' , '6': ' ' ,
+            '1': ' ' , '2': ' ' , '3': ' ' }
+
+board_keys = []
+
+for key in theBoard:
+    board_keys.append(key)
+
+def printBoard(board):
+    print(board['7'] + '|' + board['8'] + '|' + board['9'])
+    print('-+-+-')
+    print(board['4'] + '|' + board['5'] + '|' + board['6'])
+    print('-+-+-')
+    print(board['1'] + '|' + board['2'] + '|' + board['3'])
+
+def game():
+
+    turn = 'X'
+    count = 0
+
+
+    for i in range(10):
+        printBoard(theBoard)
+        print("It's your turn," + turn + ".Move to which place?")
+
+        move = input()        
+
+        if theBoard[move] == ' ':
+            theBoard[move] = turn
+            count += 1
+        else:
+            print("That place is already filled.\nMove to which place?")
+            continue
+
+        if count >= 5:
+            if theBoard['7'] == theBoard['8'] == theBoard['9'] != ' ': 
+                printBoard(theBoard)
+                print("\nGame Over.\n")                
+                print(" **** " +turn + " won. ****")                
+                break
+            elif theBoard['4'] == theBoard['5'] == theBoard['6'] != ' ': 
+                printBoard(theBoard)
+                print("\nGame Over.\n")                
+                print(" **** " +turn + " won. ****")
+                break
+            elif theBoard['1'] == theBoard['2'] == theBoard['3'] != ' ': 
+                printBoard(theBoard)
+                print("\nGame Over.\n")                
+                print(" **** " +turn + " won. ****")
+                break
+            elif theBoard['1'] == theBoard['4'] == theBoard['7'] != ' ': 
+                printBoard(theBoard)
+                print("\nGame Over.\n")                
+                print(" **** " +turn + " won. ****")
+                break
+            elif theBoard['2'] == theBoard['5'] == theBoard['8'] != ' ':
+                printBoard(theBoard)
+                print("\nGame Over.\n")                
+                print(" **** " +turn + " won. ****")
+                break
+            elif theBoard['3'] == theBoard['6'] == theBoard['9'] != ' ': 
+                printBoard(theBoard)
+                print("\nGame Over.\n")                
+                print(" **** " +turn + " won. ****")
+                break 
+            elif theBoard['7'] == theBoard['5'] == theBoard['3'] != ' ': 
+                printBoard(theBoard)
+                print("\nGame Over.\n")                
+                print(" **** " +turn + " won. ****")
+                break
+            elif theBoard['1'] == theBoard['5'] == theBoard['9'] != ' ':
+                printBoard(theBoard)
+                print("\nGame Over.\n")                
+                print(" **** " +turn + " won. ****")
+                break 
+
+        
+        if count == 9:
+            print("\nGame Over.\n")                
+            print("It's a Tie!!")
+
+        if turn =='X':
+            turn = 'O'
+        else:
+            turn = 'X'        
+    
+    restart = input("Do want to play Again?(y/n)")
+    if restart == "y" or restart == "Y":  
+        for key in board_keys:
+            theBoard[key] = " "
+
+        game()
+
+if __name__ == "__main__":
+    game()
+
+2) 8 Puzzle problem
+
+from collections import deque
+
+start = (1, 2, 3,
+         4, 5, 6,
+         0, 7, 8)
+
+goal = (1, 2, 3,
+        4, 5, 6,
+        7, 8, 0)
+
+q = deque()
+q.append((start, [start]))   # (current_state, path)
+
+visited = [start]
+
+while q:
+    s, path = q.popleft()
+
+    if s == goal:
+        print("GOAL REACHED!\n")
+        for step, p in enumerate(path):
+            print("Step", step)
+            print(p[0:3])
+            print(p[3:6])
+            print(p[6:9])
+            print()
+        break
+
+    i = s.index(0)
+
+    for move in [-3, 3, -1, 1]:
+        j = i + move
+
+        if j < 0 or j > 8:
+            continue
+        if move == -1 and i % 3 == 0:
+            continue
+        if move == 1 and i % 3 == 2:
+            continue
+
+        temp = list(s)
+        temp[i], temp[j] = temp[j], temp[i]
+        temp = tuple(temp)
+
+        if temp not in visited:
+            visited.append(temp)
+            q.append((temp, path + [temp]))
+
+3) Water Jug Problem (4,3,0,0,2,0) steps:-2,7,2,6,3,7
+
+a=int(input("Enter Jug A Capacity: "));
+b=int(input("Enter Jug B Capacity: "));
+ai=int(input("Initially Water in Jug A: "));
+bi=int(input("Initially Water in Jug B: "));
+af=int(input("Final State of Jug A: "));
+bf=int(input("Final State of Jug B: "));
+print("List Of Operations You can Do:\n");
+print("1.Fill Jug A Completely\n");
+print("2.Fill Jug B Completely\n");
+print("3.Empty Jug A Completely\n");
+print("4.Empty Jug B Completely\n");
+print("5.Pour From Jug A till Jug B filled Completely or A becomes empty\n");
+print("6.Pour From Jug B till Jug A filled Completely or B becomes empty\n");
+print("7.Pour all From Jug B to Jug A\n");
+print("8.Pour all From Jug A to Jug B\n");
+while ((ai!=af or bi!=bf)):
+    
+    op=int(input("Enter the Operation: "));
+    if(op==1):
+        ai=a;
+    elif(op==2):
+        bi=b;
+    elif(op==3):
+        ai=0;
+    elif(op==4):
+        bi=0;
+    elif(op==5):
+        if(b-bi>ai):
+            bi=ai+bi;
+            ai=0;
+        else:
+            ai=ai-(b-bi);
+            bi=b;
+    elif(op==6):
+        if(a-ai>bi):
+            ai=ai+bi;
+            bi=0;
+        else:
+            bi=bi-(a-ai);
+            ai=a;
+    elif(op==7):
+        
+        ai=ai+bi;
+        bi=0;
+    elif(op==8):
+        bi=bi+ai;
+        ai=0;
+    print(ai,bi);
+
+4) N queen Problem
+
+def is_safe(board, row, col, N):
+   
+    for i in range(row):
+        if board[i] == col or \
+           board[i] - i == col - row or \
+           board[i] + i == col + row:
+            return False
+    return True
+
+def solve_n_queens(board, row, N):
+    if row == N:
+        print_solution(board, N)
+        return
+
+    for col in range(N):
+        if is_safe(board, row, col, N):
+            board[row] = col
+            solve_n_queens(board, row + 1, N)
+            board[row] = -1  # Backtrack
+
+def print_solution(board, N):
+    print("\nSolution:")
+    for i in range(N):
+        row = ['.'] * N
+        row[board[i]] = 'Q'
+        print(" ".join(row))
+    print("\n" + "-" * (2 * N))
+
+def n_queens(N):
+    board = [-1] * N
+    solve_n_queens(board, 0, N)
+
+N = int(input("Enter the number of queens (N): "))
+n_queens(N)
+
+5) Tower of Hanoi
+
+def  toh(src,dest,aux,n):
+    if(n == 0):
+        return
+    
+    toh(src,aux,dest,n-1)
+    print(f"Move disk {n} from {src} to {dest}")
+    toh(aux,dest,src,n-1)
+
+if __name__ == "__main__":
+    n = 3
+    toh('A','C','B',n)
+
+6) prolog family tree
+
+% -------- FACTS --------
+male(john).
+male(paul).
+male(david).
+
+female(mary).
+female(lisa).
+
+parent(john, paul).
+parent(john, mary).
+parent(lisa, paul).
+parent(lisa, mary).
+parent(paul, david).
+
+% -------- RULES --------
+father(X, Y) :- parent(X, Y), male(X).
+mother(X, Y) :- parent(X, Y), female(X).
+sibling(X, Y) :- parent(Z, X), parent(Z, Y), X \= Y.
+grandparent(X, Y) :- parent(X, Z), parent(Z, Y).
+
+% -------- START --------
+:- initialization(main).
+
+main :-
+    write('FAMILY CHATBOT STARTED'), nl,
+    write('Type a query like father(john,paul).'), nl,
+    write('Type stop. to exit.'), nl,
+    chat.
+
+chat :-
+    read(Q),
+    ( Q = stop ->
+        write('Goodbye!'), nl
+    ;
+        answer(Q),
+        chat
+    ).
+
+% -------- RESPONSES --------
+answer(father(X,Y)) :-
+    ( father(X,Y) ->
+        write('Yes, correct.'), nl
+    ;
+        write('No, wrong.'), nl
+    ).
+
+answer(mother(X,Y)) :-
+    ( mother(X,Y) ->
+        write('Yes, correct.'), nl
+    ;
+        write('No, wrong.'), nl
+    ).
+
+answer(sibling(X,Y)) :-
+    ( sibling(X,Y) ->
+        write('Yes, they are siblings.'), nl
+    ;
+        write('No, they are not siblings.'), nl
+    ).
+
+answer(grandparent(X,Y)) :-
+    ( grandparent(X,Y) ->
+        write('Yes, correct.'), nl
+    ;
+        write('No, wrong.'), nl
+    ).
+
+answer(_) :-
+    write('I do not understand.'), nl.
+
+**input
+father(john, paul).
+mother(lisa, mary).
+sibling(paul, mary).
+grandparent(john, david).
+stop.
+
+    
