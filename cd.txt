@@ -1,3 +1,21 @@
+{
+    "redhat.telemetry.enabled": true,
+    "liveServer.settings.donotShowInfoMsg": true,
+    "path-intellisense.showHiddenFiles": true,
+    "files.autoSave": "afterDelay",
+    "workbench.editor.empty.hint": "hidden",
+
+    "editor.quickSuggestions": {
+        "other": true,
+        "comments": true,
+        "strings": true
+    },
+    "editor.suggestOnTriggerCharacters": true,
+
+    "terminal.integrated.defaultProfile.windows": "Command Prompt"
+}
+
+
 1) tic tac toe
 
 theBoard = {'7': ' ' , '8': ' ' , '9': ' ' ,
